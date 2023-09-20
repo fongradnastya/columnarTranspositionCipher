@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/icon.png" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handjet&family=PT+Serif:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>Шифр вертикальной перестановки</title>
+</head>
+<body>
+    <div class="container">
+        <div class="big-block">
+            <div class="header">
+                <img src="img/cipher.png" alt="cipher" class="icon">
+                <h1>Шифр вертикальной перестановки</h1>
+            </div>
+            <div class="block">
+                <form action="#" name="main">
+                    <div class="section choise">
+                        <label for="option">Выберите версию шифра:</label>
+                        <select id="option" name="option" class="form-control">
+                            <option value="regular" class="form-control">Стандартный шифр вертикальной перестановки</option>
+                            <option value="advanced" class="form-control">Улучшенный шифр вертикальной перестановки</option>
+                        </select>
+                    </div>
+                    <div class="sectionform-outline">
+                        <label class="form-label" for="encryptionArea">Текст</label>
+                        <textarea name="text" placeholder="Введите текст" class="form-control text" id="encryptionArea" rows="4"></textarea>
+                    </div>
+                    <div class="section mb-3">
+                      <label for="keyInput" class="form-label">Ключ для шифрования</label>
+                      <input type="text" name="key" class="form-control key" id="keyInput" placeholder="Введите ключ">
+                    </div>
+                    <div class="section buttons">
+                        <input type="button" name="encryption" class="btn encryption" value="Зашифровать">
+                        <input type="button" name="dencryption" class="btn visualize dencryption" value="Дешифровать">
+                    </div>
+                    <div class="section result">
+                        <label class="form-label" for="resultArea">Результат</label>
+                        <textarea class="form-control" name="result" placeholder="Здесь будет результат преобразования" id="resultArea" rows="4" readonly></textarea>
+                        <input type="button" name="copy" class="btn copy" value="Скопировать результат">
+                    </div>
+                </form>
+                <!--<div class="table"><table id="myTable"></table></div>-->
+            </div>
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
