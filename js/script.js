@@ -101,14 +101,16 @@ function advancedTranspositionCipher(text, key){
 }
 
 function advancedTranspositionDecipher(text, key){
-  // Add padding if necessary
-  id = 0;
-  while (text.length % key.length !== 0) {
-    text += key[id];
-    id++;
-  }
   result = columnarTranspositionDecipher(text, key);
-  return columnarTranspositionDecipher(result, key);
+  result = columnarTranspositionDecipher(result, key);
+  let id = key.length - 1;
+  while(id >= 0){
+    if(result.endsWith(key[id])){
+      result = result.slice(0, -1);
+    }
+    id--;
+  }
+  return result;
 }
 
 function columnarTranspositionCipher(text, key) {
