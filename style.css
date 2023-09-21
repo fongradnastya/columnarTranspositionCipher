@@ -183,10 +183,13 @@ h3{
     font-weight: 400;
 }
 
-#table{
-    overflow: auto;
+#table{   
     margin-top: 50px;
     display: none;
+}
+
+.table-container{
+    overflow: auto;
     max-width: 100%;
 }
 

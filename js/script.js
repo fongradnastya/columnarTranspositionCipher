@@ -25,6 +25,7 @@ encryptBtn.addEventListener("click", ()=>{
     showResult(output);
   }
   else{
+    showResult("");
     const tablle = document.getElementById("table");
     if (tablle.style.display == "block") { 
     tablle.style.display = "none"; //Показываем элемент
@@ -44,6 +45,9 @@ dencryptBtn.addEventListener("click", ()=>{
       output = advancedTranspositionDecipher(text, key);
     }
     showResult(output);
+  }
+  else{
+    showResult("");
   }
 })
 
@@ -136,9 +140,8 @@ function columnarTranspositionCipher(text, key) {
   for (let char of sortedKey) {
       let index = key.indexOf(char);
       ciphertext += columns[index];
-      key = key.replace(char, " ");  // Ensure each character in the key is used only once
+      key = key.replace(char, " ");
   }
-
   return ciphertext;
 }
 
@@ -154,9 +157,8 @@ function columnarTranspositionDecipher(ciphertext, key) {
       let length = originalIndex < totalSegments ? segmentLength : segmentLength - 1;
       segments[originalIndex] = ciphertext.substr(index, length);
       index += length;
-      key = key.replace(char, " ");  // Ensure each character in the key is used only once
+      key = key.replace(char, " ");
   }
-
   let plaintext = "";
   for (let i = 0; i < segmentLength; i++) {
       for (let segment of segments) {
@@ -165,7 +167,6 @@ function columnarTranspositionDecipher(ciphertext, key) {
           }
       }
   }
-
   return plaintext;
 }
 
