@@ -14,6 +14,7 @@ encryptBtn.addEventListener("click", ()=>{
   let text = form.text.value;
   let key = form.key.value;
   if(checkInput(text, key)){
+    showTable(text, key);
     let output;
     if(option.value == "regular"){
       output = columnarTranspositionCipher(text, key);
@@ -22,6 +23,12 @@ encryptBtn.addEventListener("click", ()=>{
       output = advancedTranspositionCipher(text, key);
     }
     showResult(output);
+  }
+  else{
+    const tablle = document.getElementById("table");
+    if (tablle.style.display == "block") { 
+    tablle.style.display = "none"; //Показываем элемент
+  }
   }
 })
 
@@ -69,6 +76,10 @@ function showResult(result){
 }
 
 function showTable(message, key) {
+  const tablle = document.getElementById("table");
+  if (tablle.style.display != "block") { 
+    tablle.style.display = "block"; //Показываем элемент
+  }
   var x = key.length;
   var y = message.length / x;
   var table = document.getElementById("myTable");
