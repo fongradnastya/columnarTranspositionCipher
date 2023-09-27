@@ -105,27 +105,15 @@ function showTable(message, key) {
 }
 
 function advancedTranspositionCipher(text, key){
-  // Add padding if necessary
-  id = 0;
-  while (text.length % key.length !== 0) {
-    text += key[id];
-    id++;
-  }
-  result = columnarTranspositionCipher(text, key);
+  hash = simpleHash(key) % 26;
+  result = caesarCipher(text, hash);
   return columnarTranspositionCipher(result, key);
 }
 
 function advancedTranspositionDecipher(text, key){
-  result = columnarTranspositionDecipher(text, key);
-  result = columnarTranspositionDecipher(result, key);
-  let id = key.length - 1;
-  while(id >= 0){
-    if(result.endsWith(key[id])){
-      result = result.slice(0, -1);
-    }
-    id--;
-  }
-  return result;
+  hash = simpleHash(key) % 26;
+  result = caesarDecipher(text, hash);
+  return columnarTranspositionDecipher(result, key);
 }
 
 function columnarTranspositionCipher(text, key) {
@@ -143,6 +131,44 @@ function columnarTranspositionCipher(text, key) {
       key = key.replace(char, " ");
   }
   return ciphertext;
+}
+
+function simpleHash(key) {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+      hash += key.charCodeAt(i);
+  }
+  return hash;
+}
+
+function caesarCipher(text, shift) {
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+        let ascii = text.charCodeAt(i);
+        if (ascii >= 65 && ascii <= 90) {
+            result += String.fromCharCode((ascii - 65 + shift) % 26 + 65);  // Uppercase
+        } else if (ascii >= 97 && ascii <= 122) {
+            result += String.fromCharCode((ascii - 97 + shift) % 26 + 97);  // Lowercase
+        } else {
+            result += text.charAt(i);
+        }
+    }
+    return result;
+}
+
+function caesarDecipher(text, shift) {
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+        let ascii = text.charCodeAt(i);
+        if (ascii >= 65 && ascii <= 90) {
+            result += String.fromCharCode((ascii - 65 - shift + 26) % 26 + 65);  // Uppercase
+        } else if (ascii >= 97 && ascii <= 122) {
+            result += String.fromCharCode((ascii - 97 - shift + 26) % 26 + 97);  // Lowercase
+        } else {
+            result += text.charAt(i);
+        }
+    }
+    return result;
 }
 
 function columnarTranspositionDecipher(ciphertext, key) {
@@ -177,4 +203,118 @@ async function copyTextToClipboard(text) {
   } catch (err) {
       console.error('Error in copying text: ', err);
   }
+}
+
+
+var OtherSymbols = [' ',',','.',':',';','!','?','-','_','=','+','(',')','[',']','@',
+  '`',"'",'"','<','>','|','/','%','$','^','&','*','~'];
+var Numbers = ['0','1','2','3','4','5','6','7','8','9'];
+var RusAlfUp = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 
+  'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я'];
+var RusAlfLower = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 
+  'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
+var EngAlfUp = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+var EngAlfLower = ['a','b','c','d','e','f','g','h','i','j','k','l','m','m','o','p','q','r','s','t',
+  'u','v','w','x','y','z'];
+var RusAlfUpEncrypt = Array(33);
+var RusAlfLowerEncrypt = Array(33);
+var EngAlfUpEncrypt = Array(26); 
+var EngAlfLowerEncrypt = Array(26);
+var NumbersEncrypt = Array(10);
+  
+  initEncrypt();
+  
+function initEncrypt() {
+  UserStep = 20
+  RusAlfUpEncrypt = CezarEncrypt(UserStep, RusAlfUp);
+  RusAlfLowerEncrypt = CezarEncrypt(UserStep, RusAlfLower);
+  NumbersEncrypt = CezarEncrypt(UserStep, Numbers);
+  EngAlfUpEncrypt = CezarEncrypt(UserStep, EngAlfUp);
+  EngAlfLowerEncrypt = CezarEncrypt(UserStep, EngAlfLower);
+}
+  
+function CezarEncrypt(stap, arr) {
+  var CopyAlf = arr.slice();
+  var i = 0;
+  while ((i + stap) < (CopyAlf.length)) {
+    var buff = CopyAlf[i];
+    CopyAlf[i] = CopyAlf[i + stap];
+    CopyAlf[i + stap] = buff;
+    i++;     
+  }
+  return CopyAlf;
+}
+  
+function contains(symb, arr) {
+    var letter = symb;
+    pos = 0;
+    for (var i = 0; i < arr.length; i++) {
+      if (letter === arr[i]) {
+        pos = i;
+        return true;
+        break;
+      }
+    }
+  }
+  
+function encrypt(text) {
+  var result = '';
+  for (var i = 0; i <= text.length; i++) {
+    var symbol = text[i];
+    if (contains(symbol, OtherSymbols)) {
+      result += symbol;
+    }
+    if (contains(symbol, Numbers)) {
+      symbol = NumbersEncrypt[pos];
+      result += symbol;
+    }
+    if (contains(symbol, RusAlfUp)) {
+      symbol = RusAlfUpEncrypt[pos];
+      result += symbol;
+    }
+    if ((contains(symbol, RusAlfLower))) {
+      symbol = RusAlfLowerEncrypt[pos];
+      result += symbol;
+    }
+    if (contains(symbol, EngAlfUp)) {
+      symbol = EngAlfUpEncrypt[pos];
+      result += symbol;
+    }
+    if ((contains(symbol, EngAlfLower))) {
+      symbol = EngAlfLowerEncrypt[pos];
+      result += symbol;
+    }
+  }
+  return result;
+}
+  
+function decrypt(text) {
+  var result = '';
+  for (var i = 0; i <= text.length; i++) {
+    var symbol = text[i];
+    if (contains(symbol, OtherSymbols)) {
+      result += symbol;
+    }
+    if (contains(symbol, NumbersEncrypt)) {
+      symbol = Numbers[pos];
+      result += symbol;
+    }
+    if (contains(symbol, RusAlfUpEncrypt)) {
+      symbol = RusAlfUp[pos];
+      result += symbol;
+    }
+    if ((contains(symbol, RusAlfLowerEncrypt))) {
+      symbol = RusAlfLower[pos];
+      result += symbol;
+    }
+    if (contains(symbol, EngAlfUpEncrypt)) {
+      symbol = EngAlfUp[pos];
+      result += symbol;
+    }
+    if ((contains(symbol, EngAlfLowerEncrypt))) {
+      symbol = EngAlfLower[pos];
+      result += symbol;
+    }
+  }
+  return result;
 }
