@@ -24,7 +24,7 @@ encryptBtn.addEventListener("click", ()=>{
       output = encrypt(text);
     }
     else{
-      output = doubleTranspositionCipher(text, key, true);
+      output = doubleColumnarTranspositionCipher(text, key);
     }
     showResult(output);
   }
@@ -49,7 +49,7 @@ dencryptBtn.addEventListener("click", ()=>{
       output = decrypt(text);
     }
     else{
-      output = doubleTranspositionDecipher(text, key);
+      output = doubleColumnarTranspositionDecipher(text, key);
     }
     showResult(output);
   }
@@ -123,36 +123,37 @@ function advancedTranspositionDecipher(text, key){
   return columnarTranspositionDecipher(result, key);
 }
 
-function doubleTranspositionCipher(text, key, isDouble) {
-  let columns = Array(key.length).fill("");
-  let sortedKey = Array.from(key).sort().join("");
-  let transposedText = "";
-  // First transposition (by rows)
-  if(isDouble){
-    for (let i = 0; i < text.length; i += key.length) {
-      let row = text.slice(i, i + key.length);
-      for (let j = 0; j < key.length; j++) {
-          transposedText += row[key.indexOf(sortedKey[j])] || " ";
-      }
+function doubleColumnarTranspositionCipher(text, key) {
+  padding = text.length % key.length
+  for(i = padding; i > 0; i--){
+    text += " ";
+  }
+  // First, we create a matrix with the number of rows equal to the length of the key
+  let matrix = [];
+  for (let i = 0; i < key.length; i++) {
+    let row = [];
+    for (let j = 0; j < Math.ceil(text.length / key.length); j++) {
+      row.push(text[j + i * Math.ceil(text.length / key.length)] || '');
     }
-    console.log(transposedText);
-    console.log("12111");
+    matrix.push(row);
   }
-  else{
-    transposedText = text;
-    console.log(transposedText);
+  console.log(matrix);
+  // Then, we sort the rows of the matrix according to the key
+  let sortedKey = Array.from(key).sort().join('');
+  let sortedMatrix = [];
+  for (let i = 0; i < key.length; i++) {
+      sortedMatrix.push(matrix[key.indexOf(sortedKey[i])]);
   }
-  // Second transposition (by columns)
-  for (let i = 0; i < transposedText.length; i++) {
-      columns[i % key.length] += transposedText[i];
+  console.log(sortedMatrix);
+  // We then read off the columns of the sorted matrix to get the first transposition
+  let transposedText = '';
+  for (let i = 0; i < key.length; i++) {
+    for (let j = 0; j < text.length / key.length; j++) {
+      transposedText += sortedMatrix[i][j] || '';
+    }
   }
-  let ciphertext = "";
-  for (let char of sortedKey) {
-      let index = key.indexOf(char);
-      ciphertext += columns[index];
-      key = key.replace(char, " ");
-  }
-  return ciphertext;
+  console.log(transposedText);
+  return columnarTranspositionCipher(transposedText, key);
 }
 
 function columnarTranspositionCipher(text, key) {
@@ -210,35 +211,36 @@ function caesarDecipher(text, shift) {
     return result;
 }
 
-function doubleTranspositionDecipher(ciphertext, key) {
-  let columns = Array(key.length).fill("");
-  let sortedKey = Array.from(key).sort().join("");
-
-  // Distribute the ciphertext into columns
-  for (let i = 0; i < ciphertext.length; i++) {
-      columns[i % key.length] += ciphertext[i];
+function doubleColumnarTranspositionDecipher(ciphertext, key) {
+  ciphertext = columnarTranspositionDecipher(ciphertext, key);
+  console.log(ciphertext);
+  // First, we create a matrix with the number of rows equal to the length of the key
+  let matrix = [];
+  for (let i = 0; i < key.length; i++) {
+    let row = [];
+    for (let j = 0; j < Math.ceil(ciphertext.length / key.length); j++) {
+      row.push(ciphertext[j + i * Math.ceil(ciphertext.length / key.length)] || '');
+    }
+    matrix.push(row);
   }
-  console.log("11111111111");
-  // Reorder the columns according to the original key
-  let plaintext = "";
-  for (let char of sortedKey) {
-      let index = key.indexOf(char);
-      plaintext += columns[index];
-      // Replace with a character that's not in the key
-      key = key.replace(char, " ");
+  console.log(matrix);
+  // Then, we sort the rows of the matrix according to the key
+  let sortedKey = Array.from(key).sort().join('');
+  let sortedMatrix = [];
+  for (let i = 0; i < key.length; i++) {
+    sortedMatrix[key.indexOf(sortedKey[i])] = matrix[i];
   }
-  console.log(plaintext);
-  // Perform the second transposition (by rows)
-  let transposedText = "";
-  for (let i = 0; i < plaintext.length; i += sortedKey.trim().length) {
-      let row = plaintext.slice(i, i + sortedKey.trim().length);
-      for (let j = 0; j < sortedKey.trim().length; j++) {
-          transposedText += row[sortedKey.trim().indexOf(sortedKey.trim()[j])] || " ";
-      }
+  console.log(sortedMatrix);
+  // We then read off the columns of the sorted matrix to get the first transposition
+  let transposedText = '';
+  for (let i = 0; i < key.length; i++) {
+    for (let j = 0; j < Math.ceil(ciphertext.length / key.length); j++) {
+        transposedText += sortedMatrix[i][j] || '';
+    }
   }
-  console.log(transposedText);
-  return transposedText;
+  return transposedText.replace(/\s+$/, '');
 }
+
 
 function columnarTranspositionDecipher(ciphertext, key) {
   let sortedKey = Array.from(key).sort().join("");
