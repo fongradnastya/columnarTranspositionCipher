@@ -20,8 +20,8 @@ encryptBtn.addEventListener("click", ()=>{
       output = columnarTranspositionCipher(text, key);
     }
     else if(option.value == "cezar"){
-      initEncrypt();
       output = encrypt(text);
+      output = doubleColumnarTranspositionCipher(output, key);
     }
     else{
       output = doubleColumnarTranspositionCipher(text, key);
@@ -47,6 +47,7 @@ dencryptBtn.addEventListener("click", ()=>{
     }
     else if(option.value == "cezar"){
       output = decrypt(text);
+      output = doubleColumnarTranspositionDecipher(output, key);
     }
     else{
       output = doubleColumnarTranspositionDecipher(text, key);
@@ -111,26 +112,16 @@ function showTable(message, key) {
   }
 }
 
-function advancedTranspositionCipher(text, key){
-  hash = simpleHash(key) % 26;
-  result = caesarCipher(text, hash);
-  return columnarTranspositionCipher(result, key);
-}
-
-function advancedTranspositionDecipher(text, key){
-  hash = simpleHash(key) % 26;
-  result = caesarDecipher(text, hash);
-  return columnarTranspositionDecipher(result, key);
-}
-
 function doubleColumnarTranspositionCipher(text, key) {
-  padding = text.length % key.length
+  newKey = Array.from(key, (char, i) => char + i);
+  console.log(newKey);
+  padding = text.length % newKey.length
   for(i = padding; i > 0; i--){
     text += " ";
   }
   // First, we create a matrix with the number of rows equal to the length of the key
   let matrix = [];
-  for (let i = 0; i < key.length; i++) {
+  for (let i = 0; i < newKey.length; i++) {
     let row = [];
     for (let j = 0; j < Math.ceil(text.length / key.length); j++) {
       row.push(text[j + i * Math.ceil(text.length / key.length)] || '');
@@ -139,10 +130,11 @@ function doubleColumnarTranspositionCipher(text, key) {
   }
   console.log(matrix);
   // Then, we sort the rows of the matrix according to the key
-  let sortedKey = Array.from(key).sort().join('');
+  let indices = Array.from({length: key.length}, (_, i) => i);
+  indices.sort((a, b) => newKey[a] < newKey[b] ? -1 : (newKey[a] > newKey[b] ? 1 : a - b));
   let sortedMatrix = [];
   for (let i = 0; i < key.length; i++) {
-      sortedMatrix.push(matrix[key.indexOf(sortedKey[i])]);
+    sortedMatrix.push(matrix[indices[i]]);
   }
   console.log(sortedMatrix);
   // We then read off the columns of the sorted matrix to get the first transposition
@@ -156,14 +148,13 @@ function doubleColumnarTranspositionCipher(text, key) {
   return columnarTranspositionCipher(transposedText, key);
 }
 
+
 function columnarTranspositionCipher(text, key) {
   let columns = Array(key.length).fill("");
   let sortedKey = Array.from(key).sort().join("");
-
   for (let i = 0; i < text.length; i++) {
       columns[i % key.length] += text[i];
   }
-
   let ciphertext = "";
   for (let char of sortedKey) {
       let index = key.indexOf(char);
@@ -212,6 +203,7 @@ function caesarDecipher(text, shift) {
 }
 
 function doubleColumnarTranspositionDecipher(ciphertext, key) {
+  newKey = Array.from(key, (char, i) => char + i);
   ciphertext = columnarTranspositionDecipher(ciphertext, key);
   console.log(ciphertext);
   // First, we create a matrix with the number of rows equal to the length of the key
@@ -225,10 +217,11 @@ function doubleColumnarTranspositionDecipher(ciphertext, key) {
   }
   console.log(matrix);
   // Then, we sort the rows of the matrix according to the key
-  let sortedKey = Array.from(key).sort().join('');
+  let indices = Array.from({length: key.length}, (_, i) => i);
+  indices.sort((a, b) => newKey[a] < newKey[b] ? -1 : (newKey[a] > newKey[b] ? 1 : a - b));
   let sortedMatrix = [];
   for (let i = 0; i < key.length; i++) {
-    sortedMatrix[key.indexOf(sortedKey[i])] = matrix[i];
+    sortedMatrix[indices[i]] = matrix[i];
   }
   console.log(sortedMatrix);
   // We then read off the columns of the sorted matrix to get the first transposition
@@ -293,7 +286,7 @@ var EngAlfUpEncrypt = Array(26);
 var EngAlfLowerEncrypt = Array(26);
 var NumbersEncrypt = Array(10);
   
-  initEncrypt();
+initEncrypt();
   
 function initEncrypt() {
   UserStep = 20
