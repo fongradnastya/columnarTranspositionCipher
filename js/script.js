@@ -19,8 +19,12 @@ encryptBtn.addEventListener("click", ()=>{
     if(option.value == "regular"){
       output = columnarTranspositionCipher(text, key);
     }
+    else if(option.value == "cezar"){
+      initEncrypt();
+      output = encrypt(text);
+    }
     else{
-      output = advancedTranspositionCipher(text, key);
+      output = doubleTranspositionCipher(text, key, true);
     }
     showResult(output);
   }
@@ -37,12 +41,15 @@ dencryptBtn.addEventListener("click", ()=>{
   let text = form.text.value;
   let key = form.key.value;
   if(checkInput(text, key)){
-    let output 
+    let output;
     if(option.value == "regular"){
       output = columnarTranspositionDecipher(text, key);
     }
+    else if(option.value == "cezar"){
+      output = decrypt(text);
+    }
     else{
-      output = advancedTranspositionDecipher(text, key);
+      output = doubleTranspositionDecipher(text, key);
     }
     showResult(output);
   }
@@ -116,6 +123,38 @@ function advancedTranspositionDecipher(text, key){
   return columnarTranspositionDecipher(result, key);
 }
 
+function doubleTranspositionCipher(text, key, isDouble) {
+  let columns = Array(key.length).fill("");
+  let sortedKey = Array.from(key).sort().join("");
+  let transposedText = "";
+  // First transposition (by rows)
+  if(isDouble){
+    for (let i = 0; i < text.length; i += key.length) {
+      let row = text.slice(i, i + key.length);
+      for (let j = 0; j < key.length; j++) {
+          transposedText += row[key.indexOf(sortedKey[j])] || " ";
+      }
+    }
+    console.log(transposedText);
+    console.log("12111");
+  }
+  else{
+    transposedText = text;
+    console.log(transposedText);
+  }
+  // Second transposition (by columns)
+  for (let i = 0; i < transposedText.length; i++) {
+      columns[i % key.length] += transposedText[i];
+  }
+  let ciphertext = "";
+  for (let char of sortedKey) {
+      let index = key.indexOf(char);
+      ciphertext += columns[index];
+      key = key.replace(char, " ");
+  }
+  return ciphertext;
+}
+
 function columnarTranspositionCipher(text, key) {
   let columns = Array(key.length).fill("");
   let sortedKey = Array.from(key).sort().join("");
@@ -169,6 +208,36 @@ function caesarDecipher(text, shift) {
         }
     }
     return result;
+}
+
+function doubleTranspositionDecipher(ciphertext, key) {
+  let columns = Array(key.length).fill("");
+  let sortedKey = Array.from(key).sort().join("");
+
+  // Distribute the ciphertext into columns
+  for (let i = 0; i < ciphertext.length; i++) {
+      columns[i % key.length] += ciphertext[i];
+  }
+  console.log("11111111111");
+  // Reorder the columns according to the original key
+  let plaintext = "";
+  for (let char of sortedKey) {
+      let index = key.indexOf(char);
+      plaintext += columns[index];
+      // Replace with a character that's not in the key
+      key = key.replace(char, " ");
+  }
+  console.log(plaintext);
+  // Perform the second transposition (by rows)
+  let transposedText = "";
+  for (let i = 0; i < plaintext.length; i += sortedKey.trim().length) {
+      let row = plaintext.slice(i, i + sortedKey.trim().length);
+      for (let j = 0; j < sortedKey.trim().length; j++) {
+          transposedText += row[sortedKey.trim().indexOf(sortedKey.trim()[j])] || " ";
+      }
+  }
+  console.log(transposedText);
+  return transposedText;
 }
 
 function columnarTranspositionDecipher(ciphertext, key) {
@@ -252,7 +321,6 @@ function contains(symb, arr) {
       if (letter === arr[i]) {
         pos = i;
         return true;
-        break;
       }
     }
   }
@@ -261,27 +329,22 @@ function encrypt(text) {
   var result = '';
   for (var i = 0; i <= text.length; i++) {
     var symbol = text[i];
-    if (contains(symbol, OtherSymbols)) {
-      result += symbol;
-    }
     if (contains(symbol, Numbers)) {
       symbol = NumbersEncrypt[pos];
-      result += symbol;
     }
-    if (contains(symbol, RusAlfUp)) {
+    else if (contains(symbol, RusAlfUp)) {
       symbol = RusAlfUpEncrypt[pos];
-      result += symbol;
     }
-    if ((contains(symbol, RusAlfLower))) {
+    else if ((contains(symbol, RusAlfLower))) {
       symbol = RusAlfLowerEncrypt[pos];
-      result += symbol;
     }
-    if (contains(symbol, EngAlfUp)) {
+    else if (contains(symbol, EngAlfUp)) {
       symbol = EngAlfUpEncrypt[pos];
-      result += symbol;
     }
-    if ((contains(symbol, EngAlfLower))) {
+    else if ((contains(symbol, EngAlfLower))) {
       symbol = EngAlfLowerEncrypt[pos];
+    }
+    if(symbol !== undefined){
       result += symbol;
     }
   }
@@ -292,27 +355,22 @@ function decrypt(text) {
   var result = '';
   for (var i = 0; i <= text.length; i++) {
     var symbol = text[i];
-    if (contains(symbol, OtherSymbols)) {
-      result += symbol;
-    }
     if (contains(symbol, NumbersEncrypt)) {
       symbol = Numbers[pos];
-      result += symbol;
     }
-    if (contains(symbol, RusAlfUpEncrypt)) {
+    else if (contains(symbol, RusAlfUpEncrypt)) {
       symbol = RusAlfUp[pos];
-      result += symbol;
     }
-    if ((contains(symbol, RusAlfLowerEncrypt))) {
+    else if ((contains(symbol, RusAlfLowerEncrypt))) {
       symbol = RusAlfLower[pos];
-      result += symbol;
     }
-    if (contains(symbol, EngAlfUpEncrypt)) {
+    else if (contains(symbol, EngAlfUpEncrypt)) {
       symbol = EngAlfUp[pos];
-      result += symbol;
     }
-    if ((contains(symbol, EngAlfLowerEncrypt))) {
+    else if ((contains(symbol, EngAlfLowerEncrypt))) {
       symbol = EngAlfLower[pos];
+    }
+    if(symbol !== undefined){
       result += symbol;
     }
   }
