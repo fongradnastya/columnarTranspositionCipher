@@ -20,6 +20,7 @@ encryptBtn.addEventListener("click", ()=>{
       output = columnarTranspositionCipher(text, key);
     }
     else if(option.value == "cezar"){
+      initEncrypt(key);
       output = encrypt(text);
       output = doubleColumnarTranspositionCipher(output, key);
     }
@@ -46,6 +47,7 @@ dencryptBtn.addEventListener("click", ()=>{
       output = columnarTranspositionDecipher(text, key);
     }
     else if(option.value == "cezar"){
+      initEncrypt(key);
       output = decrypt(text);
       output = doubleColumnarTranspositionDecipher(output, key);
     }
@@ -112,16 +114,9 @@ function showTable(message, key) {
   }
 }
 
-function doubleColumnarTranspositionCipher(text, key) {
-  newKey = Array.from(key, (char, i) => char + i);
-  console.log(newKey);
-  padding = text.length % newKey.length
-  for(i = padding; i > 0; i--){
-    text += " ";
-  }
-  // First, we create a matrix with the number of rows equal to the length of the key
+function createMatrix(text, key){
   let matrix = [];
-  for (let i = 0; i < newKey.length; i++) {
+  for (let i = 0; i < key.length; i++) {
     let row = [];
     for (let j = 0; j < Math.ceil(text.length / key.length); j++) {
       row.push(text[j + i * Math.ceil(text.length / key.length)] || '');
@@ -129,6 +124,17 @@ function doubleColumnarTranspositionCipher(text, key) {
     matrix.push(row);
   }
   console.log(matrix);
+  return matrix;
+}
+
+function doubleColumnarTranspositionCipher(text, key) {
+  newKey = Array.from(key, (char, i) => char + i);
+  console.log(newKey);
+  padding = text.length % newKey.length
+  for(i = padding; i > 0; i--){
+    text += " ";
+  }
+  matrix = createMatrix(text, newKey);
   // Then, we sort the rows of the matrix according to the key
   let indices = Array.from({length: key.length}, (_, i) => i);
   indices.sort((a, b) => newKey[a] < newKey[b] ? -1 : (newKey[a] > newKey[b] ? 1 : a - b));
@@ -164,59 +170,12 @@ function columnarTranspositionCipher(text, key) {
   return ciphertext;
 }
 
-function simpleHash(key) {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-      hash += key.charCodeAt(i);
-  }
-  return hash;
-}
-
-function caesarCipher(text, shift) {
-    let result = '';
-    for (let i = 0; i < text.length; i++) {
-        let ascii = text.charCodeAt(i);
-        if (ascii >= 65 && ascii <= 90) {
-            result += String.fromCharCode((ascii - 65 + shift) % 26 + 65);  // Uppercase
-        } else if (ascii >= 97 && ascii <= 122) {
-            result += String.fromCharCode((ascii - 97 + shift) % 26 + 97);  // Lowercase
-        } else {
-            result += text.charAt(i);
-        }
-    }
-    return result;
-}
-
-function caesarDecipher(text, shift) {
-    let result = '';
-    for (let i = 0; i < text.length; i++) {
-        let ascii = text.charCodeAt(i);
-        if (ascii >= 65 && ascii <= 90) {
-            result += String.fromCharCode((ascii - 65 - shift + 26) % 26 + 65);  // Uppercase
-        } else if (ascii >= 97 && ascii <= 122) {
-            result += String.fromCharCode((ascii - 97 - shift + 26) % 26 + 97);  // Lowercase
-        } else {
-            result += text.charAt(i);
-        }
-    }
-    return result;
-}
-
 function doubleColumnarTranspositionDecipher(ciphertext, key) {
   newKey = Array.from(key, (char, i) => char + i);
   ciphertext = columnarTranspositionDecipher(ciphertext, key);
   console.log(ciphertext);
-  // First, we create a matrix with the number of rows equal to the length of the key
-  let matrix = [];
-  for (let i = 0; i < key.length; i++) {
-    let row = [];
-    for (let j = 0; j < Math.ceil(ciphertext.length / key.length); j++) {
-      row.push(ciphertext[j + i * Math.ceil(ciphertext.length / key.length)] || '');
-    }
-    matrix.push(row);
-  }
-  console.log(matrix);
-  // Then, we sort the rows of the matrix according to the key
+  matrix = createMatrix(ciphertext, newKey);
+  // Sort the rows of the matrix according to the key
   let indices = Array.from({length: key.length}, (_, i) => i);
   indices.sort((a, b) => newKey[a] < newKey[b] ? -1 : (newKey[a] > newKey[b] ? 1 : a - b));
   let sortedMatrix = [];
@@ -224,7 +183,7 @@ function doubleColumnarTranspositionDecipher(ciphertext, key) {
     sortedMatrix[indices[i]] = matrix[i];
   }
   console.log(sortedMatrix);
-  // We then read off the columns of the sorted matrix to get the first transposition
+  // Read off the columns of the sorted matrix to get the first transposition
   let transposedText = '';
   for (let i = 0; i < key.length; i++) {
     for (let j = 0; j < Math.ceil(ciphertext.length / key.length); j++) {
@@ -285,11 +244,17 @@ var RusAlfLowerEncrypt = Array(33);
 var EngAlfUpEncrypt = Array(26); 
 var EngAlfLowerEncrypt = Array(26);
 var NumbersEncrypt = Array(10);
+
+function simpleHash(key) {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+      hash += key.charCodeAt(i);
+  }
+  return hash;
+}
   
-initEncrypt();
-  
-function initEncrypt() {
-  UserStep = 20
+function initEncrypt(key) {
+  UserStep = simpleHash(key) % 20;
   RusAlfUpEncrypt = CezarEncrypt(UserStep, RusAlfUp);
   RusAlfLowerEncrypt = CezarEncrypt(UserStep, RusAlfLower);
   NumbersEncrypt = CezarEncrypt(UserStep, Numbers);
